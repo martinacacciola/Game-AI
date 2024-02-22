@@ -28,10 +28,11 @@ def determineBuildArea():
     heights = world_slice.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
 
     # Extract the coordinates of terrain points within the specified range
-    terrain_points = [(x, heights[x, z], z) for x in range(build_area_range.begin[0], build_area_range.end[0] + 1)
-                                            for z in range(build_area_range.begin[1], build_area_range.end[1] + 1)
-                                            if np.isin((x, z), heights).all()]
-    
+    terrain_points = [(x, heights[x, z], z) for x in range(max(0, build_area_range.begin[0]), min(heights.shape[0] - 1, build_area_range.end[0] + 1))
+    for z in range(max(0, build_area_range.begin[1]), min(heights.shape[1] - 1, build_area_range.end[1] + 1))
+    if np.isin((x, z), heights).all()
+]
+
     # Calculate the convex hull of terrain points
     if terrain_points:
         terrain_points_2d = [(x, z) for x, _, z in terrain_points]
@@ -53,8 +54,6 @@ def determineBuildArea():
     build_area = geo.Rect((min_x, min_z), (max_x - min_x + 1, max_z - min_z + 1))
 
     return build_area
-
-
 
 def adaptToTerrain(build_area):
     # Get the heightmap data for the build area
@@ -140,7 +139,6 @@ def adaptToTerrain(build_area):
     return adaptation_result
 
 
-
 def generateBuilding(build_area):
     # Determine ground level and adapt to terrain
     adaptation_result = adaptToTerrain(build_area)
@@ -163,7 +161,7 @@ def generateBuilding(build_area):
         generateMedievalBuilding(build_area)
 
     # Add interior decoration
-    addInteriorDecoration(build_area)
+    addInteriorDecoration(build_area, architectural_style)
 
 
 def generateModernBuilding(build_area):
@@ -180,20 +178,21 @@ def generateModernBuilding(build_area):
 
     # Create a glass-pane facade for the building
     glass_pane_block = Block("minecraft:glass_pane", data='{"east": "true", "west": "true", "north": "true", "south": "true"}')
-    geo.placeCuboid(ED, (build_area.begin[0] + 1, build_area.begin[1], build_area.begin[2] + 1),
-                    (build_area.end[0] - 1, build_area.begin[1] + 5, build_area.end[2] - 1),
-                    glass_pane_block)
+    geo.placeCuboid(ED, (build_area.begin[0] + 1, build_area.begin[1], 0),  # Assuming the height is set to 0
+                (build_area.end[0] - 1, build_area.begin[1] + 5, build_area.end[1] - 1),
+                glass_pane_block)
 
     # Place a modern door
     door_block = Block("minecraft:wooden_door", data='{"facing": "north", "half": "lower", "hinge": "left"}')
-    ED.placeBlock((50, 1, build_area.begin[2]), door_block)
+    ED.placeBlock((50, 1, 0), door_block)  # Assuming the height is set to 0
 
     # Place modern-style windows
     window_block = Block("minecraft:glass_pane", data='{"east": "true", "west": "true", "north": "false", "south": "false"}')
     for x in range(build_area.begin[0] + 1, build_area.end[0], 10):
-        geo.placeCuboid(ED, (x, build_area.begin[1] + 1, build_area.begin[2] + 1),
-                        (x + 2, build_area.begin[1] + 4, build_area.begin[2] + 3),
-                        window_block)
+        for z in range(build_area.begin[1] + 1, build_area.end[1], 10):
+            geo.placeCuboid(ED, (x, build_area.begin[1] + 1, build_area.begin[0] + 1),
+                (x + 2, build_area.begin[1] + 4, build_area.begin[0] + 3),
+                window_block)
 
 
 def generateMedievalBuilding(build_area):
@@ -201,24 +200,31 @@ def generateMedievalBuilding(build_area):
 
     # Place a castle wall around the build area
     castle_wall = mt.signBlock(wood="stone_brick", wall=True, line1="Castle Wall")
-    ED.placeCuboid((build_area.begin[0], build_area.begin[1], build_area.begin[2]),
-                   (build_area.end[0], build_area.begin[1] + 5, build_area.end[2]), castle_wall)
+    castle_wall_block = Block("stone_brick")
+    geo.placeCuboid(ED, (build_area.begin[0], build_area.begin[1], 0),  # Assuming the height is set to 0
+                (build_area.end[0], build_area.begin[1] + 5, build_area.end[1]),
+                castle_wall_block)
 
     # Place towers at each corner of the build area
     tower_material = "cobblestone"
     tower_height = 10
-    for corner in [(build_area.begin[0], build_area.begin[2]), (build_area.end[0], build_area.begin[2]),
-                   (build_area.end[0], build_area.end[2]), (build_area.begin[0], build_area.end[2])]:
+    # Assuming tower_material is a valid block type
+    for corner in [(build_area.begin[0], 0, build_area.begin[1]), (build_area.end[0], 0, build_area.begin[1]),
+               (build_area.end[0], 0, build_area.end[1]), (build_area.begin[0], 0, build_area.end[1])]:
         tower = mt.signBlock(wood=tower_material, wall=True, line1="Castle Tower")
-        ED.placeCuboid((corner[0], build_area.begin[1], corner[1]),
-                       (corner[0], build_area.begin[1] + tower_height, corner[1]), tower)
+        geo.placeCuboid(ED, (corner[0], build_area.begin[1], corner[2]),
+                   (corner[0], build_area.begin[1] + tower_height, corner[2]), tower)
+
 
     # Place wooden structures inside the castle walls
     wooden_structure_material = "oak"
     structure_height = 8
-    ED.placeCuboid((build_area.begin[0] + 3, build_area.begin[1], build_area.begin[2] + 3),
-                   (build_area.end[0] - 3, build_area.begin[1] + structure_height, build_area.end[2] - 3),
-                   Block(wooden_structure_material))
+    wooden_block = Block(wooden_structure_material)
+    geo.placeCuboid((build_area.begin[0] + 3, build_area.begin[1], build_area.begin[1] + 3),
+                (build_area.end[0] - 3, build_area.begin[1] + structure_height, build_area.end[1] - 3),
+                wooden_block)
+
+
 
     # Add a lectern with a book describing the medieval building
     lectern_block = mt.lecternBlock(facing="south", bookData=mt.bookData("Medieval Castle Guide"))
@@ -253,11 +259,10 @@ def addInteriorDecoration(build_area, architectural_style):
         element_type, material, size = rnd.choice(decoration_elements)
 
         # Randomly choose a position within the build area
-        position = (
-            rnd.randint(build_area.begin[0] + 2, build_area.end[0] - 2),
-            build_area.begin[1] + 1,
-            rnd.randint(build_area.begin[2] + 2, build_area.end[2] - 2)
+        position = (rnd.randint(build_area.begin[0] + 2, build_area.end[0] - 2), build_area.begin[1] + 1,
+                    rnd.randint(build_area.begin[1] + 2, build_area.end[1] - 2)
         )
+
 
         # Place the chosen decoration element
         if element_type == "table":

@@ -2,7 +2,10 @@ import logging
 from gdpc import interface as INTF
 from gdpc import geometry as GEO
 from gdpc import Block, Editor
-import wavefunctioncollapse as wfc
+import numpy as np
+import itertools
+from tqdm import tqdm
+from typing import Tuple, List, Dict
 
 import random
 from random import randint
@@ -16,8 +19,9 @@ BUILD_AREA = editor.getBuildArea()
 STARTX, STARTY, STARTZ = BUILD_AREA.begin
 LASTX, LASTY, LASTZ = BUILD_AREA.last
 
-# Load world slice
+# Global variables
 WORLDSLICE = editor.loadWorldSlice(BUILD_AREA.toRect(), cache=True)
+heights = WORLDSLICE.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
 
 # Define block types
 glass = Block('glass')
@@ -63,6 +67,47 @@ deepslate_brick_stairs = ('deepslate_brick_stairs')
 quartz_bricks = Block('quartz_bricks')
 air = Block('air')
 
+def terraform_distance(heights: np.ndarray, y: int, origin: Tuple[int,int], size: Tuple[int,int]) -> int:
+    """Calculate how many blocks need to be placed and removed to make area falt on level y.
+
+    Args:
+        heights (np.ndarray): heightmap
+        y (int): desired height of area (
+        origin (Tuple[int,int,int,int]): the bottom left corner of the area to flatten in local coordinates x,z
+        size (Tuple[int,int,int,int]): the size of the area to flatten in x,z
+    """
+    assert origin >= (0,0)
+    assert origin[0]+size[0] <= heights.shape[0]
+    assert origin[1]+size[1] <= heights.shape[1]
+
+    heights_slice = heights[origin[0]:origin[0]+size[0], 
+                            origin[1]:origin[1]+size[1]]
+
+    edit_distance = np.sum(np.abs(heights_slice - y))
+
+    assert edit_distance == int(edit_distance)
+    return int(edit_distance)
+
+def score_all_possible_buildregions(heights: np.ndarray, square_sidelength=11, min_adjacent_squares=1, max_adjacent_squares=5, buffer=0):
+    print("Analyzing world slice for possible build regions")
+    max_x, max_z = heights.shape
+
+    sidelengths = range(square_sidelength*min_adjacent_squares + 2*buffer, square_sidelength*max_adjacent_squares+1 + 2*buffer, square_sidelength)
+    sizes = itertools.product(sidelengths, repeat=2)
+    origins = itertools.product(range(max_x), range(max_z))
+    for size, origin in tqdm(list(itertools.product(sizes, origins))):
+            
+        if origin[0]+size[0] <= heights.shape[0] and origin[1]+size[1] <= heights.shape[1]:
+            heights_slice = heights[origin[0]:origin[0]+size[0], 
+                                    origin[1]:origin[1]+size[1]]
+            
+            y_mean = int(np.mean(heights_slice))
+            for y in range(y_mean-1, y_mean+2):
+                if y == 63:
+                    continue  # water level
+                distance = terraform_distance(heights, y, origin, size)
+                yield origin, size, y, distance
+
 # Define dimensions of the house
 random_length = randint(18, 31)
 
@@ -75,7 +120,6 @@ def build_cellar(x, y, z, width, depth, height):
     """Builds a cellar."""
     GEO.placeCuboid(editor, (x, y - height, z), (x + width - 1, y, z + depth - 1), stone)
     
-
 
 def build_floor(x, y, z, width, depth, material):
     """Builds a floor."""
@@ -381,12 +425,7 @@ def build_interior_wall(x, y, z, material):
             if not 4 < dx < 7:
                 editor.placeBlock((x + width - 2 - dx, y + dy, z + 7), material)
 
-
-
-
   
-
-    
 def build_entrance(x, y, z, height):
     """Builds a grand entrance with a door."""
     # Entrance Door
@@ -444,6 +483,11 @@ def main():
     # Placing 2nd floor features
     add_interior_features_2_floor(x, y, z)
 
+
+def print_build_region():
+    for build_region in score_all_possible_buildregions(heights):
+        origin, size, y, distance = build_region
+        print(f"Build region: Origin={origin}, Size={size}, Target Height={y}, Distance={distance}")
 
 if __name__ == '__main__':
     main()

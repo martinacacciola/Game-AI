@@ -108,11 +108,33 @@ def score_all_possible_buildregions(heights: np.ndarray, square_sidelength=11, m
                 distance = terraform_distance(heights, y, origin, size)
                 yield origin, size, y, distance
 
-# Define dimensions of the house
+"""
+Random version of the house
+ # Define dimensions of the house
 random_length = randint(18, 31)
 
 width, depth, height = random_length, random_length, random.choice([5,6,7,8])  # Dimensions for the ground floor
-print(width, depth, height)
+print(width, depth, height) 
+"""
+
+# Get build region information
+build_regions = list(score_all_possible_buildregions(heights))
+
+# Check if there are valid build regions
+if build_regions:
+    # Choose the build region with the minimum distance
+    best_build_region = min(build_regions, key=lambda x: x[3])
+
+    # Use the dimensions and position of the best build region for the house
+    origin, size, _, _ = best_build_region
+    width, depth = size
+    height = random.choice([5, 6, 7, 8])  # You can modify this as needed
+
+    # Print the chosen dimensions
+    print("Chosen dimensions:", width, depth, height)
+else:
+    print("No valid build regions found. Adjust your parameters or handle this case accordingly.")
+
 cellar_height = 4  # Height of the cellar
 
 # Building functions
@@ -235,7 +257,7 @@ def add_interior_features_2_floor(x, y, z):
     #print(random_height)
     random_length = randint(4, depth - 4)
     #print(random_length)
-    random_x_position = randint(13, width - 4)    
+    random_x_position = randint(13, max(13,width - 4))    
     #print(random_x_position)
 
     # ladder

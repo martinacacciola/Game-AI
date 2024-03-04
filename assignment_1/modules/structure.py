@@ -29,28 +29,29 @@ heights = WORLDSLICE.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
 #avg_height = np.mean(heights) non serve in questo codice
 
 def initializeHouse():
-    dy = randint(10, 15)  # Building height
-    dx = randint(10, 20)  # Building width
-    dz = randint(10, 20)  # Building depth
-    position = find_position(dx, dy, dz, heights)
-    
+    dy = randint(5, 10)  # Building height
+    #dx = randint(10, 20)  # Building width
+    #dz = randint(10, 20)  # Building depth
+    position = find_position(heights)
+
     # Check if a suitable position is found
     if position is not None:
         # Retrieve the found coordinates and dimensions
-        x_coord, z_coord, start_x, start_z, dx, dy, dz = position
-        
-        start_y_choice = heights[x_coord, z_coord]
-        if start_y_choice < STARTY:
-            print("Reduce the height of the house")
-            return None
-        
-        start_y = start_y_choice
-        # Now you can use x_coord, z_coord, start_x, start_z, dx, dy, dz, start_y in this function
-        return x_coord, z_coord, start_x, start_z, dx, dy, dz, start_y
-    
+        x_coord, z_coord, start_x, start_z, dx, dz = position
     else:
         print("No suitable position found.")
         return None
+
+    start_y_choice = heights[x_coord, z_coord]
+    if start_y_choice < STARTY:
+        print("Reduce the height of the house")
+        return None
+
+    start_y = start_y_choice
+    # Now you can use x_coord, z_coord, start_x, start_z, dx, dy, dz, start_y in this function
+    return x_coord, z_coord, start_x, start_z, dx, dy, dz, start_y
+
+    
 
 
 def foundation(x, y, z, dx, dy, dz, materials):
@@ -128,9 +129,14 @@ def windows(x, y, z, dx, dy, dz, materials, num_windows=2):
     Create windows on the walls of the house
     '''
     # Take the material from another module (randomly)
-    material = get_random_material(materials['window'])
-    # Place windows on two opposite walls
+    material = get_random_material(materials['windows'])
+    
     for i in range(num_windows):
+        if dy > 2:
+            window_y = y + randint(1, dy - 2)
+        else:
+            window_y = y + 1  # Set a default value if dy is less than 2
+        
         if i % 2 == 0:
             # Place windows on the first wall
             window_x = x + i
@@ -140,24 +146,22 @@ def windows(x, y, z, dx, dy, dz, materials, num_windows=2):
             window_x = x + dx - i - 1
             window_z = z + dz - 1
         
-        # Choose a random height for the window
-        window_y = y + randint(1, dy - 2)
-        
         # Create the window
         ED.placeBlock((window_x, window_y, window_z), Block(material))
 
 
-def main():
+
+def generateHouse():
     # Initialize the dimensions of the building sampling randomly from an interval
-    dx = randint(10, 20)  # Building width
-    dy = randint(10, 15)  # Building height
-    dz = randint(10, 20)  # Building depth
+    #dx = randint(10, 20)  # Building width
+    #dy = randint(10, 15)  # Building height
+    #dz = randint(10, 20)  # Building depth
 
     # Retrieve the found dimensions and position of the building
     position = initializeHouse()
     # Check if a suitable position is found
     if position is not None:
-        x, z, start_x, start_z, dx, dy, dz = position
+        x, z, start_x, start_z, dx, dy, dz, _ = position
         
         # Choose randomly the building style (medieval or modern)
         building_style = 'medieval' if randint(0, 1) == 0 else 'modern' 
@@ -180,6 +184,14 @@ def main():
         
     else:
         print("No suitable position found.")
+
+def main():
+    try:
+        result = generateHouse()
+        if result is not None:
+            print("House built successfully!")
+    except KeyboardInterrupt:
+        print("Interrupted.")
 
 # Call the main function if this script is executed
 if __name__ == "__main__":

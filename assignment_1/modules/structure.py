@@ -28,11 +28,12 @@ WORLDSLICE = ED.loadWorldSlice(buildRect, cache=True)
 heights = WORLDSLICE.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
 #avg_height = np.mean(heights) non serve in questo codice
 
-def initializeHouse():
-    dy = randint(5, 10)  # Building height
-    #dx = randint(10, 20)  # Building width
-    #dz = randint(10, 20)  # Building depth
-    position = find_position(heights)
+""" def initializeHouse():
+    #dy = randint(3, 7)  # Building height
+    dy = randint(1,3)
+    dx = randint(10, 20)  # Building width
+    dz = randint(10, 20)  # Building depth
+    position = find_position(heights, dx, dz)
 
     # Check if a suitable position is found
     if position is not None:
@@ -49,9 +50,63 @@ def initializeHouse():
 
     start_y = start_y_choice
     # Now you can use x_coord, z_coord, start_x, start_z, dx, dy, dz, start_y in this function
-    return x_coord, z_coord, start_x, start_z, dx, dy, dz, start_y
+    return x_coord, z_coord, start_x, start_z, dx, dy, dz, start_y """
 
+""" def initializeHouse():
+    # dy = randint(3, 7)  # Building height
+    dy = 0
+    # dx = randint(10, 20)  # Building width
+    # dz = randint(10, 20)  # Building depth
+    positions = find_position(heights)
+
+    # Check if a suitable position is found
+    if positions:
+        # Retrieve the found coordinates and dimensions (take the first position if there are multiple)
+        x, z, start_x, start_z, dx, dz = positions[0]
+    else:
+        print("No suitable position found.")
+        return None
+
+    start_y_choice = heights[x, z]
+    if start_y_choice < STARTY:
+        print("Reduce the height of the house")
+        return None
+
+    start_y = start_y_choice
+    # Now you can use x, z, start_x, start_z, dx, dy, dz, start_y in this function
+    return x, z, start_x, start_z, dx, dy, dz, start_y """
+
+def initializeHouse():
+    position = find_position(heights)
     
+    if position is not None:
+        x, z, dx, dz = position
+        print('Position:',position)
+        start_x, start_z = x + STARTX, z + STARTZ
+        print('Coordinates:',start_x, start_z)
+        dy = randint(3,7)  # You can set dy to 0 or any other value you need
+
+        # Check if a suitable position is found
+        if start_x + dx <= LASTX and start_z + dz <= LASTZ:
+            start_y_choice = heights[x, z]
+            print('Start_y:',start_y_choice)
+            if start_y_choice < STARTY:
+                print("Reduce the height of the house")
+                return None
+
+            start_y = start_y_choice
+            print(start_x, start_y, start_z, dx, dy, dz)
+            # Now you can use start_x, start_y, start_z, dx, dy, dz in this function
+            return x, z, start_x, start_y, start_z, dx, dy, dz
+    
+        else:
+            print("House dimensions exceed build area.")
+            return None
+    else:
+        print("No suitable position found.")
+        return None
+    
+
 
 
 def foundation(x, y, z, dx, dy, dz, materials):
@@ -159,9 +214,10 @@ def generateHouse():
 
     # Retrieve the found dimensions and position of the building
     position = initializeHouse()
+    print(position)
     # Check if a suitable position is found
     if position is not None:
-        x, z, start_x, start_z, dx, dy, dz, _ = position
+        x, z, start_x, start_y, start_z, dx, dy, dz = position
         
         # Choose randomly the building style (medieval or modern)
         building_style = 'medieval' if randint(0, 1) == 0 else 'modern' 

@@ -77,6 +77,7 @@ heights = WORLDSLICE.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
     return x, z, start_x, start_z, dx, dy, dz, start_y """
 
 def initializeHouse():
+    global STARTY
     position = find_position(heights)
     
     if position is not None:
@@ -90,22 +91,34 @@ def initializeHouse():
         if start_x + dx <= LASTX and start_z + dz <= LASTZ:
             start_y_choice = heights[x, z]
             print('Start_y:',start_y_choice)
-            if start_y_choice < STARTY:
-                print("Reduce the height of the house")
-                return None
+            #if start_y_choice < STARTY:
+                #print("Reduce the height of the house")
+                #return None
+            
+            # Check if STARTY is greater than the terrain level
+            if STARTY > 63: # 63 or start_y_choice
+                print("Adjusting STARTY to the terrain level.")
+                STARTY = 63
+            
+            # If the dimensions exceed the build area, reduce them
+            while start_x + dx > LASTX or start_z + dz > LASTZ:
+                dx = max(2, dx - 1)
+                dz = max(2, dz - 1)
+                print(f"Reducing dimensions: dx={dx}, dz={dz}")
 
             start_y = start_y_choice
             print(start_x, start_y, start_z, dx, dy, dz)
             # Now you can use start_x, start_y, start_z, dx, dy, dz in this function
             return x, z, start_x, start_y, start_z, dx, dy, dz
-    
+
+        
         else:
             print("House dimensions exceed build area.")
             return None
     else:
         print("No suitable position found.")
         return None
-    
+
 
 
 
@@ -113,26 +126,12 @@ def foundation(x, y, z, dx, dy, dz, materials):
     """
     Create the foundation of the house
     """
-    # Take the material from another module (randomly)
     material = get_random_material(materials['foundation'])
-    geo.placeCuboid(ED, (x, y, z), (x+dx-1, y, x+dz-1), Block(material))
-    geo.placeCuboid(ED, (x, y+1, z), (x+dx-1, y+1, x+dz-1), Block(material))
-   #base built false etc ?
-    Base_Built = False
-    i = 1
-    while not Base_Built:
-        control = 0
-        tot_blocks = 0
-        for block in vec.loop2D((x,z), (x + dx, z + dz)):
-            tot_blocks += 1
-            if ED.getBlock((block[0], y - i, block[1])).id == "minecraft:air" or ED.getBlock((block[0], y - i, block[1])).id == "minecraft:water":
-                geo.placeCuboid(ED, (block[0], y - i, block[1]), (block[0], y - i, block[1]), Block(materials['foundation']))
-            else:
-                control += 1
-        if control == tot_blocks:
-            Base_Built = True
-        i += 1
-    
+    for i in range(x, x + dx):
+        for j in range(z, z + dz):
+            # Place the foundation block at the start_y coordinate
+            ED.placeBlock((i, y, j), Block(material))
+ 
 
 def walls(x, y, z, dx, dy, dz, materials):
     '''
@@ -167,16 +166,14 @@ def door(x, y, z, dx, dy, dz, materials):
     '''
     Create the door of the house
     '''
-    # Take the material from another module (randomly)
     material = get_random_material(materials['door'])
-    # Place the door in the center of the front wall
     door_x = x + dx // 2
     door_z = z + dz - 1
-    #ED.placeBlock((door_x, y, door_z), Block(material))
-    geo.placeCuboid(ED, (door_x, y + 1, door_z), (door_x, y + 2, door_z), Block("air"))  # Remove the door block
-    geo.placeCuboid(ED, (door_x, y, door_z + 1), (door_x, y + 2, door_z + 1), Block("air")) # Remove the block in front of the door
-    geo.placeCuboid(ED, (door_x, y + 1, door_z), (door_x, y + 1, door_z), Block(material)) # Place the door
-    #geo.placeCuboid(ED, (door_x, y, door_z + 1), (door_x, y, door_z + 1), Block("quartz_stairs")) # Stairs in front of the door
+    # Replace the blocks in front of the door with air
+    ED.placeBlock((door_x, y, door_z + 1), Block("air"))
+    ED.placeBlock((door_x, y + 1, door_z + 1), Block("air"))
+    # Place the door block
+    ED.placeBlock((door_x, y + 1, door_z), Block(material))
 
 
 def windows(x, y, z, dx, dy, dz, materials, num_windows=2):
@@ -231,13 +228,23 @@ def generateHouse():
             raise ValueError(f"Invalid building style: {building_style}")
         
         # Choose a random number of windows
-        num_windows = randint(0, 5)
+        num_windows = randint(1, 5)
 
         foundation(start_x, STARTY, start_z, dx, dy, dz, materials)
+        print("Foundation built successfully!")
+
         walls(start_x, STARTY, start_z, dx, dy, dz, materials)
+        print("Walls built successfully!")
+
         roof(start_x, STARTY, start_z, dx, dy, dz, materials)
+        print("Roof built successfully!")
+
         windows(start_x, STARTY, start_z, dx, dy, dz, materials, num_windows)
-        
+        print("Windows built successfully!")
+
+        door(start_x, STARTY, start_z, dx, dy, dz, materials)
+        print("Door built successfully!")
+        #door(start_x, start_y, start_z, dx, dy, dz, materials)
     else:
         print("No suitable position found.")
 

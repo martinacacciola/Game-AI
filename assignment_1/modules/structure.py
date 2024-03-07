@@ -9,8 +9,10 @@ from gdpc import minecraft_tools as mt
 from gdpc import editor_tools as et
 from gdpc import vector_tools as vec
 
+# Modules made ad hoc
 from get_material import get_random_material, get_medieval_materials, get_modern_materials
 from scannering import find_position
+from interior import Interior
 
 # Setup Python's logging system
 logging.basicConfig(format="%(name)s - %(levelname)s - %(message)s")
@@ -26,55 +28,6 @@ LASTX, LASTY, LASTZ = BUILD_AREA.last
 # Global variables
 WORLDSLICE = ED.loadWorldSlice(buildRect, cache=True)
 heights = WORLDSLICE.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
-#avg_height = np.mean(heights) non serve in questo codice
-
-""" def initializeHouse():
-    #dy = randint(3, 7)  # Building height
-    dy = randint(1,3)
-    dx = randint(10, 20)  # Building width
-    dz = randint(10, 20)  # Building depth
-    position = find_position(heights, dx, dz)
-
-    # Check if a suitable position is found
-    if position is not None:
-        # Retrieve the found coordinates and dimensions
-        x_coord, z_coord, start_x, start_z, dx, dz = position
-    else:
-        print("No suitable position found.")
-        return None
-
-    start_y_choice = heights[x_coord, z_coord]
-    if start_y_choice < STARTY:
-        print("Reduce the height of the house")
-        return None
-
-    start_y = start_y_choice
-    # Now you can use x_coord, z_coord, start_x, start_z, dx, dy, dz, start_y in this function
-    return x_coord, z_coord, start_x, start_z, dx, dy, dz, start_y """
-
-""" def initializeHouse():
-    # dy = randint(3, 7)  # Building height
-    dy = 0
-    # dx = randint(10, 20)  # Building width
-    # dz = randint(10, 20)  # Building depth
-    positions = find_position(heights)
-
-    # Check if a suitable position is found
-    if positions:
-        # Retrieve the found coordinates and dimensions (take the first position if there are multiple)
-        x, z, start_x, start_z, dx, dz = positions[0]
-    else:
-        print("No suitable position found.")
-        return None
-
-    start_y_choice = heights[x, z]
-    if start_y_choice < STARTY:
-        print("Reduce the height of the house")
-        return None
-
-    start_y = start_y_choice
-    # Now you can use x, z, start_x, start_z, dx, dy, dz, start_y in this function
-    return x, z, start_x, start_z, dx, dy, dz, start_y """
 
 def initializeHouse():
     global STARTY
@@ -118,7 +71,6 @@ def initializeHouse():
     else:
         print("No suitable position found.")
         return None
-
 
 
 
@@ -230,19 +182,19 @@ def generateHouse():
         # Choose a random number of windows
         num_windows = randint(1, 5)
 
-        foundation(start_x, STARTY, start_z, dx, dy, dz, materials)
+        foundation(start_x, start_y, start_z, dx, dy, dz, materials)
         print("Foundation built successfully!")
 
-        walls(start_x, STARTY, start_z, dx, dy, dz, materials)
+        walls(start_x, start_y, start_z, dx, dy, dz, materials)
         print("Walls built successfully!")
 
-        roof(start_x, STARTY, start_z, dx, dy, dz, materials)
+        roof(start_x, start_y, start_z, dx, dy, dz, materials)
         print("Roof built successfully!")
 
-        windows(start_x, STARTY, start_z, dx, dy, dz, materials, num_windows)
+        windows(start_x, start_y, start_z, dx, dy, dz, materials, num_windows)
         print("Windows built successfully!")
 
-        door(start_x, STARTY, start_z, dx, dy, dz, materials)
+        door(start_x, start_y, start_z, dx, dy, dz, materials)
         print("Door built successfully!")
         #door(start_x, start_y, start_z, dx, dy, dz, materials)
     else:
@@ -259,4 +211,3 @@ def main():
 # Call the main function if this script is executed
 if __name__ == "__main__":
     main()
-

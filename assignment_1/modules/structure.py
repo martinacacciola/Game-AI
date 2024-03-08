@@ -18,7 +18,8 @@ from interior import Interior
 logging.basicConfig(format="%(name)s - %(levelname)s - %(message)s")
 
 # Create an Editor object with buffering enabled
-ED = Editor(buffering=False)
+#ED = Editor(buffering=False)
+ED = Editor()
 
 BUILD_AREA = ED.getBuildArea()
 buildRect = BUILD_AREA.toRect()
@@ -78,12 +79,21 @@ def foundation(x, y, z, dx, dy, dz, materials):
     """
     Create the foundation of the house
     """
-    material = get_random_material(materials['foundation'])
-    for i in range(x, x + dx):
-        for j in range(z, z + dz):
-            # Place the foundation block at the start_y coordinate
-            ED.placeBlock((i, y, j), Block(material))
- 
+    # Assuming you have a function to get the foundation material
+    foundation_material = get_random_material(materials['foundation'])
+    
+    # Clear the space for the foundation
+    for i in range(dx):
+        for j in range(dz):
+            for k in range(dy):
+                ED.placeBlock((x + i, y + k, z + j), Block("air"))
+    
+    # Place the foundation blocks at the specified coordinates
+    for i in range(dx):
+        for j in range(dz):
+            ED.placeBlock((x + i, y - 1, z + j), Block(foundation_material))
+    print('Foundation built at coordinates:',x, y, z)
+   
 
 def walls(x, y, z, dx, dy, dz, materials):
     '''
@@ -125,7 +135,7 @@ def door(x, y, z, dx, dy, dz, materials):
     ED.placeBlock((door_x, y, door_z + 1), Block("air"))
     ED.placeBlock((door_x, y + 1, door_z + 1), Block("air"))
     # Place the door block
-    ED.placeBlock((door_x, y + 1, door_z), Block(material))
+    ED.placeBlock((door_x, y, door_z), Block(material))
 
 
 def windows(x, y, z, dx, dy, dz, materials, num_windows=2):
@@ -182,6 +192,9 @@ def generateHouse():
         # Choose a random number of windows
         num_windows = randint(1, 5)
 
+        # Create an Interior object based on the chosen building style
+        interior = Interior(style=building_style)
+
         foundation(start_x, start_y, start_z, dx, dy, dz, materials)
         print("Foundation built successfully!")
 
@@ -196,7 +209,10 @@ def generateHouse():
 
         door(start_x, start_y, start_z, dx, dy, dz, materials)
         print("Door built successfully!")
-        #door(start_x, start_y, start_z, dx, dy, dz, materials)
+        
+        # Call the decorate method to add interior based on the chosen building style
+        interior.decorate(ED, start_x, start_y, start_z, dx, dy, dz)
+
     else:
         print("No suitable position found.")
 

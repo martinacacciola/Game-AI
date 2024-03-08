@@ -193,7 +193,7 @@ def find_position(heights, dx=randint(6, 9), dz=randint(6, 9)):
                     if z < height_z - 2 * dz:
                         z += dz
 
-    print("n {} locations".format(len(positions)))
+    print("There are {} locations".format(len(positions)))
 
     if len(positions) == 0:
         if dz > 6 and dx > 6:

@@ -70,7 +70,7 @@ def initializeHouse():
             print("House dimensions exceed build area.")
             return None
     else:
-        print("No suitable position found.")
+        print("No suitable position found. Change the build area.")
         return None
 
 
@@ -138,30 +138,82 @@ def door(x, y, z, dx, dy, dz, materials):
     ED.placeBlock((door_x, y, door_z), Block(material))
 
 
-def windows(x, y, z, dx, dy, dz, materials, num_windows=2):
+""" def windows(x, y, z, dx, dy, dz, materials, num_windows):
     '''
     Create windows on the walls of the house
     '''
-    # Take the material from another module (randomly)
     material = get_random_material(materials['windows'])
-    
-    for i in range(num_windows):
-        if dy > 2:
-            window_y = y + randint(1, dy - 2)
-        else:
-            window_y = y + 1  # Set a default value if dy is less than 2
-        
-        if i % 2 == 0:
-            # Place windows on the first wall
-            window_x = x + i
+
+    for _ in range(num_windows):
+        # Randomly choose the side of the house
+        side = randint(0, 3)  # 0: front, 1: back, 2: left, 3: right
+
+        # Set default values for window position and dimensions
+        window_x, window_y, window_z = 0, y + dy // 2, 0  # Window is placed at half the height of the wall
+        window_width, window_height = 2, 2  # Window dimensions
+
+        if side == 0:
+            # Front side
+            window_x = x + randint(1, dx - window_width - 1)
             window_z = z
-        else:
-            # Place windows on the opposite wall
-            window_x = x + dx - i - 1
+        elif side == 1:
+            # Back side
+            window_x = x + randint(1, dx - window_width - 1)
             window_z = z + dz - 1
-        
-        # Create the window
-        ED.placeBlock((window_x, window_y, window_z), Block(material))
+        elif side == 2:
+            # Left side
+            window_x = x
+            window_z = z + randint(1, dz - window_height - 1)
+        elif side == 3:
+            # Right side
+            window_x = x + dx - 1
+            window_z = z + randint(1, dz - window_height - 1)
+
+        # Create the rectangular-shaped window
+        for i in range(window_width):
+            for j in range(window_height):
+                ED.placeBlock((window_x + i, window_y + j, window_z), Block(material))
+
+    print("Windows added successfully!") """
+
+def windows(x, y, z, dx, dy, dz, materials, num_windows):
+    '''
+    Create windows on the walls of the house
+    '''
+    material = get_random_material(materials['windows'])
+
+    for _ in range(num_windows):
+        # Randomly choose the side of the house
+        side = randint(0, 3)  # 0: front, 1: back, 2: left, 3: right
+
+        # Set default values for window position and dimensions
+        window_x, window_y, window_z = 0, y + dy // 2, 0  # Window is placed at half the height of the wall
+        window_width, window_height = 2, 2  # Window dimensions
+
+        if side == 0:
+            # Front side
+            window_x = x + dx // 2 - window_width // 2
+            window_z = z
+        elif side == 1:
+            # Back side
+            window_x = x + dx // 2 - window_width // 2
+            window_z = z + dz - 1
+        elif side == 2:
+            # Left side
+            window_x = x
+            window_z = z + dz // 2 - window_height // 2
+        elif side == 3:
+            # Right side
+            window_x = x + dx - 1
+            window_z = z + dz // 2 - window_height // 2
+
+        # Create the rectangular-shaped window
+        for i in range(window_width):
+            for j in range(window_height):
+                ED.placeBlock((window_x + i, window_y + j, window_z), Block(material))
+
+    print("Windows added successfully!")
+
 
 
 
@@ -188,9 +240,6 @@ def generateHouse():
             materials = get_modern_materials()
         else:
             raise ValueError(f"Invalid building style: {building_style}")
-        
-        # Choose a random number of windows
-        num_windows = randint(1, 5)
 
         # Create an Interior object based on the chosen building style
         interior = Interior(style=building_style)
@@ -204,7 +253,7 @@ def generateHouse():
         roof(start_x, start_y, start_z, dx, dy, dz, materials)
         print("Roof built successfully!")
 
-        windows(start_x, start_y, start_z, dx, dy, dz, materials, num_windows)
+        windows(start_x, start_y, start_z, dx, dy, dz, materials, num_windows=2)
         print("Windows built successfully!")
 
         door(start_x, start_y, start_z, dx, dy, dz, materials)

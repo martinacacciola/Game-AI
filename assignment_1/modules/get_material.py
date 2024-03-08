@@ -30,7 +30,7 @@ def get_medieval_materials():
         'foundation': ['minecraft:stone_bricks', 'minecraft:cobblestone', 'minecraft:nether_bricks'],
         'walls': ['minecraft:stone_bricks', 'minecraft:oak_planks', 'minecraft:nether_bricks'],
         'roof': ['minecraft:oak_planks', 'minecraft:stone_bricks', 'minecraft:cobblestone'],
-        'windows': ['minecraft:glass_pane', 'minecraft:iron_bars'],
+        'windows': ['minecraft:glass_pane', 'minecraft:gray_stained_glass_pane', 'minecraft:brown_stained_glass_pane'],
         'door':['minecraft:jungle_door', 'minecraft:iron_door'],
     }
     return medieval_materials
@@ -40,10 +40,10 @@ def get_modern_materials():
     Get materials for a modern building
     """
     modern_materials = {
-        'foundation': ['minecraft:white_concrete', 'minecraft:iron_block', 'minecraft:stone'],
-        'walls': ['minecraft:glass_pane', 'minecraft:white_concrete', 'minecraft:iron_block'],
-        'roof': ['minecraft:iron_block', 'minecraft:cyan_concrete', 'minecraft:glass_pane'],
-        'windows': ['minecraft:glass_pane', 'minecraft:iron_bars'],
+        'foundation': ['minecraft:white_concrete', 'minecraft:light_gray_concrete', 'minecraft:gray_concrete'],
+        'walls': ['minecraft:light_gray_concrete', 'minecraft:white_concrete', 'minecraft:gray_concrete'],
+        'roof': ['minecraft:iron_block', 'minecraft:cyan_concrete', 'minecraft:dark_oak_wood'],
+        'windows': ['minecraft:glass_pane', 'minecraft:lime_stained_glass_pane','minecraft:blue_stained_glass_pane'],
         'door':['minecraft:birch_door', 'minecraft:warped_door'],
     }
     return modern_materials

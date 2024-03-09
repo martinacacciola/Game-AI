@@ -48,6 +48,7 @@ To interact with the Minecraft world through the GDMC HTTP interface, we first i
 set inside the game, to obtain the necessary local information. We import the world slice we are working on, corresponding to a given rectangle in x-z coordinates. It is used for faster block retrieval.
 An example of the intial set-up we have used in all files is the following: 
 ```python
+# Initialize the editor
 ED = Editor()
 
 # Get the building area set on the game

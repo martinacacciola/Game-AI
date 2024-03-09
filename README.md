@@ -114,10 +114,11 @@ Windows built successfully!
 Door built successfully!
 Medieval interior added successfully!
 ```
-Once the run is finished, the house should appear in the Minecraft world at the location found. It can happen that the building area is not suitable for a building even after the necessary adjustments of the dimensions, in that case the terminal will return this message: 
+Once the run is finished, the house should appear in the Minecraft world at the location found. It can happen that the building area is not suitable for a building even after the necessary adjustments of the dimensions. In this case, the terminal will return this message: 
 ```
 No suitable position found. Change the build area.
 ```
+and you need to set up the building area again.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

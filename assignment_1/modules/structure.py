@@ -45,12 +45,10 @@ def initializeHouse():
         if start_x + dx <= LASTX and start_z + dz <= LASTZ:
             start_y_choice = heights[x, z]
             print('Start_y:',start_y_choice)
-            #if start_y_choice < STARTY:
-                #print("Reduce the height of the house")
-                #return None
+    
             
             # Check if STARTY is greater than the terrain level
-            if STARTY > 63: # 63 or start_y_choice
+            if STARTY > 63: 
                 print("Adjusting STARTY to the terrain level.")
                 STARTY = 63
             
@@ -75,24 +73,51 @@ def initializeHouse():
 
 
 
-def foundation(x, y, z, dx, dy, dz, materials):
-    """
-    Create the foundation of the house
-    """
-    # Assuming you have a function to get the foundation material
+""" def foundation(x, y, z, dx, dy, dz, materials):
+    
+    #Create the foundation of the house
+    
     foundation_material = get_random_material(materials['foundation'])
     
     # Clear the space for the foundation
     for i in range(dx):
         for j in range(dz):
             for k in range(dy):
-                ED.placeBlock((x + i, y + k, z + j), Block("air"))
+                ED.placeBlock((x + i, y + j, z + k), Block("air"))
     
     # Place the foundation blocks at the specified coordinates
     for i in range(dx):
         for j in range(dz):
             ED.placeBlock((x + i, y - 1, z + j), Block(foundation_material))
-    print('Foundation built at coordinates:',x, y, z)
+    
+    print('Foundation built at coordinates:', x, y, z) """
+
+def foundation(x, y, z, dx, dy, dz, materials):
+    """
+    Create the foundation of the house
+    """
+    foundation_material = get_random_material(materials['foundation'])
+    
+    # Clear a space for the foundation
+    # Of a small amount to not alter the environment
+    for i in range(x - 1, x + dx + 1):
+        for j in range(y, y + dy + 5):  
+            for k in range(z - 1, z + dz + 1):
+                ED.placeBlock((i, j, k), Block("air"))
+#  for i in range(dx):
+        #for j in range(dz):
+           # for k in range(dy):
+                #ED.placeBlock((x + i, y + k, z + j), Block("air")) """
+    
+    
+    # Place the foundation blocks at the specified coordinates
+    for i in range(dx):
+        for j in range(dz):
+            ED.placeBlock((x + i, y - 1, z + j), Block(foundation_material))
+    
+    print('Foundation built at coordinates:', x, y, z)
+
+
    
 
 def walls(x, y, z, dx, dy, dz, materials):
@@ -138,43 +163,6 @@ def door(x, y, z, dx, dy, dz, materials):
     ED.placeBlock((door_x, y, door_z), Block(material))
 
 
-""" def windows(x, y, z, dx, dy, dz, materials, num_windows):
-    '''
-    Create windows on the walls of the house
-    '''
-    material = get_random_material(materials['windows'])
-
-    for _ in range(num_windows):
-        # Randomly choose the side of the house
-        side = randint(0, 3)  # 0: front, 1: back, 2: left, 3: right
-
-        # Set default values for window position and dimensions
-        window_x, window_y, window_z = 0, y + dy // 2, 0  # Window is placed at half the height of the wall
-        window_width, window_height = 2, 2  # Window dimensions
-
-        if side == 0:
-            # Front side
-            window_x = x + randint(1, dx - window_width - 1)
-            window_z = z
-        elif side == 1:
-            # Back side
-            window_x = x + randint(1, dx - window_width - 1)
-            window_z = z + dz - 1
-        elif side == 2:
-            # Left side
-            window_x = x
-            window_z = z + randint(1, dz - window_height - 1)
-        elif side == 3:
-            # Right side
-            window_x = x + dx - 1
-            window_z = z + randint(1, dz - window_height - 1)
-
-        # Create the rectangular-shaped window
-        for i in range(window_width):
-            for j in range(window_height):
-                ED.placeBlock((window_x + i, window_y + j, window_z), Block(material))
-
-    print("Windows added successfully!") """
 
 def windows(x, y, z, dx, dy, dz, materials, num_windows):
     '''
@@ -192,8 +180,9 @@ def windows(x, y, z, dx, dy, dz, materials, num_windows):
 
         if side == 0:
             # Front side
-            window_x = x + dx // 2 - window_width // 2
-            window_z = z
+            #window_x = x + dx // 2 - window_width // 2
+            #window_z = z
+            continue # We don't want windows on the front side
         elif side == 1:
             # Back side
             window_x = x + dx // 2 - window_width // 2
@@ -218,10 +207,6 @@ def windows(x, y, z, dx, dy, dz, materials, num_windows):
 
 
 def generateHouse():
-    # Initialize the dimensions of the building sampling randomly from an interval
-    #dx = randint(10, 20)  # Building width
-    #dy = randint(10, 15)  # Building height
-    #dz = randint(10, 20)  # Building depth
 
     # Retrieve the found dimensions and position of the building
     position = initializeHouse()
@@ -231,7 +216,8 @@ def generateHouse():
         x, z, start_x, start_y, start_z, dx, dy, dz = position
         
         # Choose randomly the building style (medieval or modern)
-        building_style = 'medieval' if randint(0, 1) == 0 else 'modern' 
+        #building_style = 'medieval' if randint(0, 1) == 0 else 'modern'  ricorda
+        building_style = 'medieval'
 
         # Get materials based on the chosen building style
         if building_style == 'medieval':

@@ -117,14 +117,15 @@ class Interior:
             raise ValueError(f"Invalid interior style: {self.style}")
 
     def add_medieval_interior(self, ED, start_x, start_y, start_z, dx, dy, dz):
-        # Place a wooden table and chairs at the center
+        
         center_x, center_z = start_x + dx // 2, start_z + dz // 2
-        ED.placeBlock((center_x, start_y, center_z), Block("minecraft:oak_planks"))
-        ED.placeBlock((center_x, start_y, center_z + 1), Block("minecraft:oak_stairs"))
 
         # Place bookshelves along one wall
         for i in range(start_x + 1, start_x + dx - 1):
             ED.placeBlock((i, start_y + 1, start_z + 1), Block("minecraft:bookshelf"))
+
+        # Clear the block in front of the door with air
+        ED.placeBlock((start_x + dx // 2, start_y, start_z), Block("minecraft:air"))
 
         # Place a rug in front of the table
         for i in range(center_x - 1, center_x + 2):
@@ -132,31 +133,60 @@ class Interior:
                 ED.placeBlock((i, start_y, j), Block("minecraft:red_carpet"))
 
         # Place a lantern at the center of the ceiling
-        ED.placeBlock((center_x, start_y + dy -2, center_z), Block("minecraft:lantern"))
+        ED.placeBlock((start_x + dx // 2, start_y + dy - 3, start_z + dz // 2), Block("minecraft:lantern"))
+
+        # Add a furnace adjacent to one of the walls
+        ED.placeBlock((start_x + 1, start_y, start_z + dz - 2), Block("minecraft:furnace"))
+
+        # Add a single bed along one wall (centered)
+        bed_x = start_x + dx // 2
+        ED.placeBlock((bed_x+1, start_y, start_z + 2), Block("minecraft:white_bed"))
+
+        # Hanging lanterns
+        ED.placeBlock((center_x, start_y + dy - 2, center_z + 1), Block("minecraft:lantern"))
+        ED.placeBlock((center_x, start_y + dy - 2, center_z - 1), Block("minecraft:lantern"))
+
+        # Wooden shelves on the wall
+        ED.placeBlock((center_x, start_y + 2, center_z + 1), Block("minecraft:oak_planks"))
+        ED.placeBlock((center_x, start_y + 2, center_z - 1), Block("minecraft:oak_planks"))
 
         print("Medieval interior added successfully!")
 
-def add_modern_interior(self, ED, start_x, start_y, start_z, dx, dy, dz):
-    # Place a bed along one wall, taking up half the width
-    for i in range(start_x + 1, start_x + dx // 2):
-        ED.placeBlock((i, start_y, start_z + 1), Block("minecraft:white_bed"))
 
-    # Place a desk at the center instead of a table
-    center_x, center_z = start_x + dx // 2, start_z + dz // 2
-    ED.placeBlock((center_x, start_y + 1, center_z), Block("minecraft:oak_planks"))
-    ED.placeBlock((center_x, start_y + 2, center_z), Block("minecraft:book"))
+    def add_modern_interior(self, ED, start_x, start_y, start_z, dx, dy, dz):
+        # Place a bed along one wall, taking up half the width
+        for i in range(start_x + 1, start_x + dx // 2):
+            ED.placeBlock((i, start_y, start_z + 2), Block("minecraft:red_bed"))
 
-    # Clear the block in front of the door with air
-    ED.placeBlock((start_x + dx // 2, start_y, start_z), Block("minecraft:air"))
+        # Place a carpet in the center of the room
+        for i in range(start_x + 1, start_x + dx - 1):
+            for j in range(start_z + 1, start_z + dz - 1):
+                ED.placeBlock((i, start_y, j), Block("minecraft:moss_carpet"))
 
-    # Place bookshelves along the opposite wall
-    for i in range(start_x + 1, start_x + dx - 1):
-        ED.placeBlock((i, start_y + 1, start_z + dz - 2), Block("minecraft:bookshelf"))
+        # Clear the block in front of the door with air
+        ED.placeBlock((start_x + dx // 2, start_y + 1, start_z), Block("minecraft:air")) # added +dy
 
-    # Place a modern lamp at the center of the ceiling
-    ED.placeBlock((center_x, start_y + dy - 1, center_z), Block("minecraft:sea_lantern"))
+        # Place bookshelves along the opposite wall
+        for i in range(start_x + 1, start_x + dx - 1):
+            ED.placeBlock((i, start_y + 1, start_z + dz - 2), Block("minecraft:bookshelf"))
+            #Remove the block in front of the door with air and the two blocks on the sides
+            ED.placeBlock((start_x + dx // 2, start_y + 1, start_z + dz - 1), Block("minecraft:air"))
+            ED.placeBlock((start_x + dx // 2, start_y + 1, start_z + dz - 2), Block("minecraft:air"))
 
-    print("Modern interior added successfully!")
+        # Place a modern lamp at the center of the ceiling
+        center_x, center_z = start_x + dx // 2, start_z + dz // 2
+        ED.placeBlock((center_x, start_y + dy - 1, center_z), Block("minecraft:sea_lantern"))
+
+        # Add a bedside table with a flower pot on top
+        bedside_x = start_x + dx // 2 - 1
+        bedside_z = start_z + 2
+        ED.placeBlock((bedside_x, start_y, bedside_z), Block("minecraft:oak_planks"))
+        ED.placeBlock((bedside_x, start_y + 2, bedside_z), Block("minecraft:poppy")) #flower_pot
+        #ED.placeBlock((bedside_x, start_y + 2, bedside_z), Block("minecraft:poppy"))  # Add a flower to the pot
+
+        print("Modern interior added successfully!")
+
+
 
 
 

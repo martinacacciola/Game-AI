@@ -7,7 +7,7 @@
     <li>
       <a href="#about-the-project">About The Project</a>
       <ul>
-        <li><a href="#built-with">Built With</a></li>
+        <li><a href="#packages">Packages</a></li>
       </ul>
     </li>
     <li>
@@ -31,11 +31,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About the project
 This work presents an approach to Procedural Content Generation (PCG) in the context of Minecraft. Our focus is on the procedural generation of buildings, specifically houses, within a 100x100 block
-build area. The generated structures are not only architecturally distinct but also adapt to the terrain and environment of the building area. The algorithm takes into account the randomness and infinite possibilities of the Minecraft world, ensuring
-that each generated structure is unique and integrates seamlessly into the existing world.
-
-The development of this project involved creating a procedural generation algorithm that constructs houses within a specified build area in Minecraft. 
-The algorithm was designed to generate structures that are not only architecturally distinct but also adapt to the terrain and environment of the build area. 
+build area. The generated structures are not only architecturally distinct but also adapt to the terrain and environment of the building area. The algorithm takes into account the randomness and infinite possibilities of the Minecraft world, ensuring that each generated structure is unique and integrates seamlessly into the existing world.
 
 The houses are generated with random dimensions within a given range, and the algorithm adapts these dimensions according to the available space in the selected environment. 
 Among the suitable positions identified for the house, one is chosen at random. 
@@ -43,7 +39,6 @@ This ensures that the placement of the house is not deterministic and adds an el
 
 Two different architectural styles, modern and medieval, were implemented, and the style is chosen randomly at the time of building. 
 The materials used for each part of the house are chosen randomly from a provided list, adding an element of variability to the interior decoration.
-
 The interior of the house is decorated with a few elements, keeping the houses simple and focusing more on adaptability to the terrain and functionality. 
 The algorithm also includes a terrain adaptation function that clears the blocks above and below the house, ensuring that the house integrates smoothly into the existing terrain.
 
@@ -52,21 +47,23 @@ The algorithm also includes a terrain adaptation function that clears the blocks
 
 
 
-### Built With
+### Package
+The project was developed using GDPC (Generative Design Python Client), a Python framework for use in conjunction with the [GDMC-HTTP](https://github.com/Niels-NTG/gdmc_http_interface) mod for Minecraft Java edition. To understand how the module and its component work, all the necessary information is in this [repository] (https://github.com/avdstaaij/gdpc).
+To interact with the Minecraft world through the GDMC HTTP interface, we first initialize an Editor. Then, we retrieve the initial and final coordinates of the building area we have manually
+set inside the game, to obtain the necessary local information. We import the world slice we are working on, corresponding to a given rectangle in x-z coordinates. It is used for faster block retrieval.
+An example of the intial set-up we have used in all files is the following: 
+```python
+ED = Editor()
 
-This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
+BUILD_AREA = ED.getBuildArea()
+buildRect = BUILD_AREA.toRect()
+STARTX, STARTY, STARTZ = BUILD_AREA.begin
+LASTX, LASTY, LASTZ = BUILD_AREA.last
 
-* [![Next][Next.js]][Next-url]
-* [![React][React.js]][React-url]
-* [![Vue][Vue.js]][Vue-url]
-* [![Angular][Angular.io]][Angular-url]
-* [![Svelte][Svelte.dev]][Svelte-url]
-* [![Laravel][Laravel.com]][Laravel-url]
-* [![Bootstrap][Bootstrap.com]][Bootstrap-url]
-* [![JQuery][JQuery.com]][JQuery-url]
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
+# Global variables
+WORLDSLICE = ED.loadWorldSlice(buildRect, cache=True)
+heights = WORLDSLICE.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
+```
 
 
 <!-- GETTING STARTED -->

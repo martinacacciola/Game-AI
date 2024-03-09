@@ -48,7 +48,7 @@ The algorithm also includes a terrain adaptation function that clears the blocks
 
 
 ### Packages
-The project was developed using GDPC (Generative Design Python Client), a Python framework for use in conjunction with the [GDMC-HTTP](https://github.com/Niels-NTG/gdmc_http_interface) mod for Minecraft Java edition. To understand how the module and its component work, all the necessary information is in this [repository] (https://github.com/avdstaaij/gdpc).
+The project was developed using GDPC (Generative Design Python Client), a Python framework for use in conjunction with the [GDMC-HTTP](https://github.com/Niels-NTG/gdmc_http_interface) mod for Minecraft Java edition. To understand how the module and its component work, all the necessary information is in this [repository](https://github.com/avdstaaij/gdpc).
 To interact with the Minecraft world through the GDMC HTTP interface, we first initialize an Editor. Then, we retrieve the initial and final coordinates of the building area we have manually
 set inside the game, to obtain the necessary local information. We import the world slice we are working on, corresponding to a given rectangle in x-z coordinates. It is used for faster block retrieval.
 An example of the intial set-up we have used in all files is the following: 
@@ -74,34 +74,25 @@ heights = WORLDSLICE.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
 
 To get the project running locally, it is necessary to follow the given instructions.
 
-### Prerequisites
-First, you need to install the [GDMC HTTP interface mod (v1.0.0)] (https://github.com/Niels-NTG/gdmc_ http_interface/releases/tag/v1.0.0). 
+### Prerequisites and Installation
+First, you need to install the [GDMC HTTP interface mod (v1.0.0)](https://github.com/Niels-NTG/gdmc_http_interface/releases/tag/v1.0.0). 
 To install GDPC:
 * npm
   ```sh
   pip install git+https://github.com/avdstaaij/gdpc 
   ```
-or alternatively clone the [repository] () and run `pip install .`.
+or alternatively clone the [repository](https://github.com/avdstaaij/gdpc) and run `pip install .`.
 The requirement for GDPC is Python 3.7 or above.
-You must also install Minecraft 1.19.2 (Java Edition), which requires [Forge] (https://files.minecraftforge.net/net/minecraftforge/ forge/index_1.19.2.html). The Minecraft environment must be played with the mod installed to use the framework.
+You must also install Minecraft 1.19.2 (Java Edition), which requires [Forge](https://files.minecraftforge.net/net/minecraftforge/forge/index_1.19.2.html). The Minecraft environment must be played with the mod installed to use the framework.
 
-### Installation
+### Modules
 
-_Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
+The folder is composed of four scripts:
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/your_username_/Project-Name.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
+1. `scannering.py`: for evaluating the dimensional features of the selected environment and finding the optimal x-z coordinates of the house;
+2. `structure.py`: for investigating the y-coordinate and explicitly build the house starting from foundation and finishing with decorations;
+3. `get_material.py`: for providing a list of random materials for the different sections of the building, to add variety to the content;
+4. `interior.py`: for defining the interior design elements characterizing the two architectural styles implemented.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -109,10 +100,24 @@ _Below is an example of how you can instruct your audience on installing and set
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
+To test the code, open the Minecraft application, press `t` and set a building area, with the command:
+`/setbuildarea ~~~ ~100 ~ ~100` 
+This is an example, you can provide of course specific coordinates. The important thing is to set up an area of dimensions 100x100.
+Then, run on a terminal the command `python3 structure.py`. The runnning script will print out the coordinates at which the house is being built, along with its dimensions and some checks on what is being constructed. It will appear something like this:
+```
+Foundation built at coordinates: 2149 71 2140
+Foundation built successfully!
+Walls built successfully!
+Roof built successfully!
+Windows added successfully!
+Windows built successfully!
+Door built successfully!
+Medieval interior added successfully!
+```
+Once the run is finished, the house should appear in the Minecraft world at the location found. It can happen that the building area is not suitable for a building even after the necessary adjustments of the dimensions, in that case the terminal will return this message: 
+```
+No suitable position found. Change the build area.
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

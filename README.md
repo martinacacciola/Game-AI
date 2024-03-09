@@ -14,6 +14,7 @@
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites-and-installation">Prerequisites and Installation</a></li>
+        <li><a href="#modules">Modules</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>

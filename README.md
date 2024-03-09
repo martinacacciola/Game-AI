@@ -47,7 +47,7 @@ The algorithm also includes a terrain adaptation function that clears the blocks
 
 
 
-### Package
+### Packages
 The project was developed using GDPC (Generative Design Python Client), a Python framework for use in conjunction with the [GDMC-HTTP](https://github.com/Niels-NTG/gdmc_http_interface) mod for Minecraft Java edition. To understand how the module and its component work, all the necessary information is in this [repository] (https://github.com/avdstaaij/gdpc).
 To interact with the Minecraft world through the GDMC HTTP interface, we first initialize an Editor. Then, we retrieve the initial and final coordinates of the building area we have manually
 set inside the game, to obtain the necessary local information. We import the world slice we are working on, corresponding to a given rectangle in x-z coordinates. It is used for faster block retrieval.
@@ -55,8 +55,11 @@ An example of the intial set-up we have used in all files is the following:
 ```python
 ED = Editor()
 
+# Get the building area set on the game
 BUILD_AREA = ED.getBuildArea()
 buildRect = BUILD_AREA.toRect()
+
+# Get the coordinates
 STARTX, STARTY, STARTZ = BUILD_AREA.begin
 LASTX, LASTY, LASTZ = BUILD_AREA.last
 
@@ -69,16 +72,18 @@ heights = WORLDSLICE.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+To get the project running locally, it is necessary to follow the given instructions.
 
 ### Prerequisites
-
-This is an example of how to list things you need to use the software and how to install them.
+First, you need to install the [GDMC HTTP interface mod (v1.0.0)] (https://github.com/Niels-NTG/gdmc_ http_interface/releases/tag/v1.0.0). 
+To install GDPC:
 * npm
   ```sh
-  npm install npm@latest -g
+  pip install git+https://github.com/avdstaaij/gdpc 
   ```
+or alternatively clone the [repository] () and run `pip install .`.
+The requirement for GDPC is Python 3.7 or above.
+You must also install Minecraft 1.19.2 (Java Edition), which requires [Forge] (https://files.minecraftforge.net/net/minecraftforge/ forge/index_1.19.2.html). The Minecraft environment must be played with the mod installed to use the framework.
 
 ### Installation
 

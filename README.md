@@ -105,7 +105,6 @@ Foundation built at coordinates: 2149 71 2140
 Foundation built successfully!
 Walls built successfully!
 Roof built successfully!
-Windows added successfully!
 Windows built successfully!
 Door built successfully!
 Medieval interior added successfully!

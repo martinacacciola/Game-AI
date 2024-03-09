@@ -99,7 +99,7 @@ The folder is composed of four scripts:
 To test the code, open the Minecraft application, press `t` and set a building area, with the command:
 `/setbuildarea ~~~ ~100 ~ ~100` 
 This is an example, you can provide of course specific coordinates. The important thing is to set up an area of dimensions 100x100.
-Then, run on a terminal the command `python3 structure.py`. The runnning script will print out the coordinates at which the house is being built, along with its dimensions and some checks on what is being constructed. It will appear something like this:
+Then, run on a terminal the command `python structure.py`. The runnning script will print out the coordinates at which the house is being built, along with its dimensions and some checks on what is being constructed. It will appear something like this:
 ```
 Foundation built at coordinates: 2149 71 2140
 Foundation built successfully!

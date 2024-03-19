@@ -59,71 +59,22 @@ def createTeamMCTS(firstIndex, secondIndex, isRed,
 # Agents #
 ##########
 
-class DummyAgent(CaptureAgent):
-  """
-  A Dummy agent to serve as an example of the necessary agent structure.
-  You should look at baselineTeam.py for more details about how to
-  create an agent as this is the bare minimum.
-  """
-
-  def registerInitialState(self, gameState):
-    """
-    This method handles the initial setup of the
-    agent to populate useful fields (such as what team
-    we're on).
-
-    A distanceCalculator instance caches the maze distances
-    between each pair of positions, so your agents can use:
-    self.distancer.getDistance(p1, p2)
-
-    IMPORTANT: This method may run for at most 15 seconds.
-    """
-
-    '''
-    Make sure you do not delete the following line. If you would like to
-    use Manhattan distances instead of maze distances in order to save
-    on initialization time, please take a look at
-    CaptureAgent.registerInitialState in captureAgents.py.
-    '''
-    CaptureAgent.registerInitialState(self, gameState)
-
-    '''
-    Your initialization code goes here, if you need any.
-    '''
-
-
-  def chooseAction(self, gameState):
-    """
-    Picks among actions randomly.
-    """
-    actions = gameState.getLegalActions(self.index)
-
-    '''
-    You should change this in your own agent.
-    '''
-
-    return random.choice(actions)
-  
-import random
-from captureAgents import CaptureAgent
-
 NUM_SIMULATIONS = 100
 
-class MCTSPacmanAgent(CaptureAgent):
-    """
-    A Pacman agent that uses Monte Carlo Tree Search (MCTS) to make decisions.
-    """
+class MCTSAgent(CaptureAgent):
+    def __init__(self, index, role, num_simulations=100):
+        super().__init__(index)
+        self.role = role
+        self.num_simulations = num_simulations
+
     def chooseAction(self, gameState):
-        """
-        Choose an action using MCTS.
-        """
-        # Implement MCTS algorithm here
         root = Node(state=gameState)
-        
-        for _ in range(NUM_SIMULATIONS):
+
+        # Perform MCTS simulations
+        for _ in range(self.num_simulations):
             node = root
-            state = gameState.deepCopy()  # Make a copy of the game state
-            
+            state = gameState.deepCopy()
+
             # Selection phase
             while not node.isTerminal():
                 if node.isFullyExpanded():
@@ -131,38 +82,71 @@ class MCTSPacmanAgent(CaptureAgent):
                 else:
                     node = node.expand()
                     break
-            
+
             # Simulation phase
-            simulatedState = state.deepCopy()  # Make a copy of the current state
+            simulatedState = state.deepCopy()
             while not simulatedState.isOver():
                 action = random.choice(simulatedState.getLegalActions(self.index))
                 simulatedState = simulatedState.generateSuccessor(self.index, action)
-                
+
             # Backpropagation phase
             while node is not None:
                 node.update(simulatedState.getScore())
                 node = node.parent
-        
+
         # Choose the action with the highest average value
         bestAction = root.getBestAction()
         return bestAction
 
+class OffensiveAgent(CaptureAgent):
+    def getFeatures(self, gameState, action):
+        features = util.Counter()
+        successor = self.getSuccessor(gameState, action)
+        foodList = self.getFood(successor).asList()
+        features['successorScore'] = -len(foodList)
 
-class MCTSGhostAgent(CaptureAgent):
-    """
-    A Ghost agent that uses Monte Carlo Tree Search (MCTS) to make decisions.
-    """
+        # Compute distance to the nearest food
+        if len(foodList) > 0:
+            myPos = successor.getAgentState(self.index).getPosition()
+            minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
+            features['distanceToFood'] = minDistance
+
+        # Avoid enemy ghosts
+        enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
+        visibleEnemies = [a for a in enemies if not a.isPacman() and a.getPosition() is not None]
+        if len(visibleEnemies) > 0:
+            dists = [self.getMazeDistance(myPos, a.getPosition()) for a in visibleEnemies]
+            features['distanceToGhost'] = min(dists)
+
+        # Chase enemy pacman if nearby
+        visiblePacmen = [a for a in enemies if a.isPacman() and a.getPosition() is not None]
+        if len(visiblePacmen) > 0:
+            dists = [self.getMazeDistance(myPos, a.getPosition()) for a in visiblePacmen]
+            features['distanceToPacman'] = min(dists)
+
+        # Consider capsules
+        capsules = self.getCapsules(successor)
+        if len(capsules) > 0:
+            dists = [self.getMazeDistance(myPos, c) for c in capsules]
+            features['distanceToCapsule'] = min(dists)
+
+        # Distance to borders
+        walls = gameState.getWalls()
+        height, width = walls.height, walls.width
+        x, y = int(myPos[0]), int(myPos[1])
+        distancesToBorders = [x, width - x, y, height - y]
+        features['distanceToBorders'] = min(distancesToBorders)
+
+        return features
+
     def chooseAction(self, gameState):
-        """
-        Choose an action using MCTS.
-        """
-        # Implement MCTS algorithm here
         root = Node(state=gameState)
-        
+
+        # Perform MCTS simulations
         for _ in range(NUM_SIMULATIONS):
             node = root
-            state = gameState.deepCopy()  # Make a copy of the game state
-            
+            state = gameState.deepCopy()
+
             # Selection phase
             while not node.isTerminal():
                 if node.isFullyExpanded():
@@ -170,20 +154,80 @@ class MCTSGhostAgent(CaptureAgent):
                 else:
                     node = node.expand()
                     break
-            
+
             # Simulation phase
-            simulatedState = state.deepCopy()  # Make a copy of the current state
+            simulatedState = state.deepCopy()
             while not simulatedState.isOver():
-                action = random.choice(simulatedState.getLegalActions(self.index))
+                action = self.chooseBestAction(simulatedState)
                 simulatedState = simulatedState.generateSuccessor(self.index, action)
-                
+
             # Backpropagation phase
             while node is not None:
                 node.update(simulatedState.getScore())
                 node = node.parent
-        
+
         # Choose the action with the highest average value
         bestAction = root.getBestAction()
         return bestAction
-    
+
+    def chooseBestAction(self, gameState):
+        actions = gameState.getLegalActions(self.index)
+        scores = []
+        for action in actions:
+            features = self.getFeatures(gameState, action)
+            score = features['successorScore']
+            if 'distanceToGhost' in features:
+                score += 10 / (features['distanceToGhost'] + 1)
+            if 'distanceToPacman' in features:
+                score += 5 / (features['distanceToPacman'] + 1)
+            if 'distanceToCapsule' in features:
+                score -= 3 / (features['distanceToCapsule'] + 1)
+            if 'distanceToBorders' in features:
+                score -= 1 / (features['distanceToBorders'] + 1)
+            scores.append(score)
+
+        bestAction = actions[scores.index(max(scores))]
+        return bestAction
+
+class DefensiveAgent(CaptureAgent):
+    def getFeatures(self, gameState, action):
+        features = util.Counter()
+        successor = self.getSuccessor(gameState, action)
+
+        foodList = self.getFood(successor).asList()
+        if len(foodList) > 0:
+            myPos = successor.getAgentState(self.index).getPosition()
+            minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
+            features['distanceToFood'] = minDistance
+
+        enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
+        visiblePacmen = [a for a in enemies if a.isPacman() and a.getPosition() is not None]
+        if len(visiblePacmen) > 0:
+            dists = [self.getMazeDistance(myPos, a.getPosition()) for a in visiblePacmen]
+            features['distanceToPacman'] = min(dists)
+
+        walls = gameState.getWalls()
+        height, width = walls.height, walls.width
+        x, y = int(myPos[0]), int(myPos[1])
+        distancesToBorders = [x, width - x, y, height - y]
+        features['distanceToBorders'] = min(distancesToBorders)
+
+        return features
+
+    def chooseAction(self, gameState):
+        actions = gameState.getLegalActions(self.index)
+
+        scores = []
+        for action in actions:
+            features = self.getFeatures(gameState, action)
+            score = features['distanceToFood']
+            if 'distanceToPacman' in features:
+                score -= 5 / (features['distanceToPacman'] + 1)
+            if 'distanceToBorders' in features:
+                score -= 1 / (features['distanceToBorders'] + 1)
+            scores.append(score)
+
+        bestAction = actions[scores.index(max(scores))]
+        return bestAction
+
     
